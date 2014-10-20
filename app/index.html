@@ -146,6 +146,7 @@
                 	success : function(user){
                 		currentUser = Parse.User.current();
                 		showUserForms();
+                		/*
                 		var roleACL = new Parse.ACL();
                 		var role = new Parse.Role("Admin", roleACL);
 						role.getUsers().add( currentUser );
@@ -157,6 +158,7 @@
 								console.log( arguments );
 							}
 						});
+						*/
                 		// clear out any errors: 
                 		errorDiv.innerText = "";
                 		errorDiv.style.display = "none";
@@ -193,34 +195,6 @@
 					}
 				});
             });
-
-            // add manufacturer
-            function addManufacturer(){
-            	var manuName = document.getElementById('manufacturer-name').value;
-            	var manuContact = document.getElementById('manufacturer-contact').value;
-            	var manuPhone = document.getElementById('manufacturer-phone').value;
-            	var manuEmail = document.getElementById('manufacturer-email').value;
-            	var manuFax = document.getElementById('manufacturer-fax').value;
-
-            	var Manufacturer = Parse.Object.extend("Manufacturer", {});
-            	var man = new Manufacturer();
-
-            	man.set("name", manuName);
-            	man.set("contactName", manuContact);
-            	man.set("phone", manuPhone);
-            	man.set("email", manuEmail);
-            	man.set("fax", manuFax);
-
-            	man.save( null, {
-            		success : function(manBack){
-            			console.log("hurrah! ", manBack);
-            		},
-            		error : function(obj,error){
-            			console.log("boo: ", error);
-            		}
-            	});
-
-           	}
 			
 			var $mainNavItems = $( "#nav-main li" );
 			$mainNavItems.click(function(ev){
