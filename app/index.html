@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> .: DirectTap | Log In :. </title>
+		<link rel="stylesheet" type="text/css" href="css/directTap.css">
+	</head>
+
+	<body>
+		<div id="nav-main" class="nav">
+			<ul>
+				<li class="state-selected">home</li>
+				<li>about</li>
+				<li>blog</li>
+				<li>contact</li>
+			</ul>
+		</div>
+
+		<div id="user-forms">
+			<div class="form-wrap">
+				<h3>Log in</h3>
+				<div id="error-login" class="error"></div>
+				<form id="form-log-in" method="POST">
+					<input id="login-name" type="text" placeholder="email" />
+					<input id="login-password" type="password" placeholder="password" />
+					<input type="button" id="button-login" value="go" />
+				</form>
+				<div id="forgot-password" class="fake-link"> Forgot Password? NP, click me!</div>
+			</div>
+
+			<div id="register" class="form-wrap">
+				<h3>Register</h3>
+				<div id="error-register" class="error"></div>
+				<form name="form-register" method="POST">
+					<input type="text" id="register-name" placeholder="name" />
+					<input type="text" id="register-email" placeholder="email" />
+					<input type="password" id="register-password" placeholder="password" />
+					<input type="password" id="register-confirm"placeholder=" confirm password" />
+					<input type="button" id="button-registration" value="go" />
+				</form>
+			</div>
+		</div>
+
+		<div id="logout-link" class="form-wrap"> 
+			<div id="greeting"> Hello, <span id="user-name"></span></div>
+			<div class="fake-link">log out </div>
+		</div>
+
+		<div id="add-manufacturer" class="form-wrap" style="display: none;">
+			<h3>Add Manufacturer</h3>
+			<form>
+				<label for="manufacturer-name">Manufacturer Name</label>
+				<input id="manufacturer-name" type="text" placeholder="Manufacturer Name" />
+				
+
+				<label for="">Contact Name</label>
+				<input id="manufacturer-contact" type="text" placeholder="Contact Name" />
+				
+				<label for="">Phone #</label>
+				<input id="manufacturer-phone" type="text" placeholder="" />
+
+				<label for="">Fax #</label>
+				<input id="manufacturer-fax" type="text" placeholder="" />
+				
+				<label for="">Email</label>
+				<input id="manufacturer-email"  type="text" placeholder="" />
+				
+				
+				<input type="button" id="button-add-manufacturer" value="go" />
+			</form>
+		</div>
+
+		<div id="overlay"></div>
+		<div id="popup"></div>
+
+		<script src="js/lib/parse-1.3.0.js"></script> 
+		<script type="text/javascript" src="js/ConfigMain.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+		<script language="javascript">
+            Parse.initialize( Config.parse.appId, Config.parse.jsKey );
+            var currentUser = Parse.User.current();
+
+            /*function loginTest(){
+            	var me = new Parse.User({username: "bodhi3032@gmail.com", email: "bodhi3032@gmail.com", password : "1234"})
+            	me.logIn({
+					success: function(user) {
+					// Do stuff after successful login.
+						console.log("logged in. aw yah");
+						Parse.User.logOut();
+					},
+					error: function(user, error) {
+					// The login failed. Check error to see why.
+						console.log("oh nos: ", error);
+					}
+				}); 
+            }*/
+
+            function showUserForms(){
+            	var nameText = currentUser ? currentUser.attributes.fullname : '';
+            	document.getElementById('user-name').innerHTML =  nameText;
+                document.getElementById('user-forms').style.display = Parse.User.current() != null ? "none" : "block";
+                document.getElementById('logout-link').style.display = Parse.User.current() != null ? "block" : "none";
+                document.getElementById('add-manufacturer').style.display = Parse.User.current() != null ? "block" : "none";
+            }
+
+            showUserForms();
+
+            // forgot
+            document.getElementById('forgot-password').addEventListener( 'click', function(ev){
+            	console.log("that's silly");
+            	Parse.User.requestPasswordReset("bodhi3032@gmail.com", {
+					success: function() {
+						// Password reset request was sent successfully
+						console.log("DID YOU REMEMBER YET?!");
+					},
+					error: function(error) {
+					// Show the error message somewhere
+						alert("Error: " + error.code + " " + error.message);
+					}
+				});
+            });
+
+            // logOut
+            document.getElementById('logout-link').addEventListener( 'click', function(ev){
+            	Parse.User.logOut();
+            	currentUser = null;
+            	console.log("logged out?", Parse.User.current() );
+            	showUserForms();
+            })
+
+            // login
+            var loginButton = document.getElementById('button-login');
+            loginButton.addEventListener( 'click', function(ev){
+            	var errorDiv = document.getElementById('error-login');
+            	
+            	if( Parse.User.current() ){
+            		console.log( "already logged in!" );
+            		return;
+            	}
+            	
+            	var loginUserName = document.getElementById('login-name').value;
+            	var loginPassword = document.getElementById('login-password').value;
+                var logInUser = new Parse.User({username : loginUserName, password : loginPassword})
+
+                logInUser.logIn({
+                	success : function(user){
+                		currentUser = Parse.User.current();
+                		showUserForms();
+                		var roleACL = new Parse.ACL();
+                		var role = new Parse.Role("Admin", roleACL);
+						role.getUsers().add( currentUser );
+						role.save(null, {
+							success : function(){
+								console.log( arguments );
+							},
+							error : function(){
+								console.log( arguments );
+							}
+						});
+                		// clear out any errors: 
+                		errorDiv.innerText = "";
+                		errorDiv.style.display = "none";
+                	}, 
+                	error : function(user, error){
+                		console.log("login error:", error);
+                		errorDiv.innerText = "Whoops: " + error.message;
+                		errorDiv.style.display = "block";
+                	}
+                } );
+            } );
+
+            //register new user
+            var regButton = document.getElementById('button-registration');
+            regButton.addEventListener( 'click', function(ev){
+                var errorDiv = document.getElementById('error-register');
+
+                var newUser = new Parse.User();
+                newUser.set("username", document.getElementById('register-email').value);
+                newUser.set("email", document.getElementById('register-email').value);
+                newUser.set("password", document.getElementById('register-password').value);
+                newUser.set("fullname", document.getElementById('register-name').value);
+
+                newUser.signUp(null, {
+					success: function(user) {
+						currentUser = Parse.User.current();
+						showUserForms();
+                		errorDiv.innerText = "";
+                		errorDiv.style.display = "none";
+					},
+					error: function(user, error) {
+                		errorDiv.innerText = "Whoops ("+ error.code +"): " + error.message;
+                		errorDiv.style.display = "block";
+					}
+				});
+            });
+
+            // add manufacturer
+            function addManufacturer(){
+            	var manuName = document.getElementById('manufacturer-name').value;
+            	var manuContact = document.getElementById('manufacturer-contact').value;
+            	var manuPhone = document.getElementById('manufacturer-phone').value;
+            	var manuEmail = document.getElementById('manufacturer-email').value;
+            	var manuFax = document.getElementById('manufacturer-fax').value;
+
+            	var Manufacturer = Parse.Object.extend("Manufacturer", {});
+            	var man = new Manufacturer();
+
+            	man.set("name", manuName);
+            	man.set("contactName", manuContact);
+            	man.set("phone", manuPhone);
+            	man.set("email", manuEmail);
+            	man.set("fax", manuFax);
+
+            	man.save( null, {
+            		success : function(manBack){
+            			console.log("hurrah! ", manBack);
+            		},
+            		error : function(obj,error){
+            			console.log("boo: ", error);
+            		}
+            	});
+
+           	}
+			
+			var $mainNavItems = $( "#nav-main li" );
+			$mainNavItems.click(function(ev){
+				//unset current selection
+				$mainNavItems.closest(".state-selected").removeClass("state-selected");
+				// add class to clicked element 
+				$(ev.currentTarget).addClass("state-selected");
+			})
+
+		</script>
+	</body>
+</html>

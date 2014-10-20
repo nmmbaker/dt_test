@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> .: DirectTap | Log In :. </title>
+		<link rel="stylesheet" type="text/css" href="css/directTap.css">
+	</head>
+
+	<body>
+		<div id="nav-main" class="nav">
+			<ul>
+				<li class="state-selected">home</li>
+				<li>about</li>
+				<li>blog</li>
+				<li>contact</li>
+			</ul>
+		</div>
+
+		<div id="logout-link" class="form-wrap"> 
+			<div id="greeting"> Hello, <span id="user-name"></span></div>
+			<div>log out </div>
+		</div>
+
+		<div id="overlay"></div>
+		<div id="popup"></div>
+
+		<script src="js/lib/parse-1.3.0.js"></script> 
+		<script type="text/javascript" src="js/ConfigMain.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+		<script language="javascript">			
+			var $mainNavItems = $( "#nav-main li" );
+			$mainNavItems.click(function(ev){
+				//unset current selection
+				$mainNavItems.closest(".state-selected").removeClass("state-selected");
+				// add class to clicked element 
+				$(ev.currentTarget).addClass("state-selected");
+			})
+
+		</script>
+	</body>
+</html>
